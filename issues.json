@@ -1,0 +1,122 @@
+[
+    {
+      "title": "Хэрэглэгчийн бүртгэл ба нэвтрэлт",
+      "body": "Жолооч / Зорчигч ялгаатай эрхээр бүртгэл, нэвтрэлт хийх боломж",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Жолооч чиглэл үүсгэх",
+      "body": "Жолооч гарах цэг, очих газар, завсрын буудлуудыг оруулах боломжтой",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Жолооч суудлын тоо тохируулах",
+      "body": "Жолооч хэдэн зорчигч авч явах боломжтойг зааж болно",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Зорчигч чиглэл хайх",
+      "body": "Зорчигч ойролцоох жолоочийн чиглэлүүдийг апп-д харах",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Зорчигч суудал захиалах",
+      "body": "Сонгосон жолоочийн аялалд суудал захиалах",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "GPS байршлын тогтоолт",
+      "body": "Жолооч ба зорчигчийн бодит цагийн байрлал тодорхойлох",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Push notification",
+      "body": "Унаа баталгаажсан, жолооч замдаа гарлаа, зорчигч хүрлээ гэх мэт мэдэгдэл",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Төлбөрийн систем",
+      "body": "Бэлэн бус төлбөрийн интеграц (карт, QPay, түрийвч гэх мэт)",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Аяллын дэлгэрэнгүй",
+      "body": "Цаг, зай, төлбөр, суудлын үлдэгдэл, зорчигчдын жагсаалт",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Жолоочийн аялал эхлүүлэх / дуусгах",
+      "body": "Аялал эхлэх, дуусгах товчлуур, аяллын тайлан харах",
+      "labels": ["MVP", "Mobile"]
+    },
+    {
+      "title": "Mobile framework сонгох",
+      "body": "Flutter эсвэл React Native framework ашиглах",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Backend API холболт",
+      "body": "Node.js/Express эсвэл Django/FastAPI backend API интеграц",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Өгөгдлийн сан",
+      "body": "MongoDB эсвэл PostgreSQL database",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Authentication",
+      "body": "JWT эсвэл OAuth2 authentication",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Push notification интеграц",
+      "body": "Firebase эсвэл OneSignal ашиглах",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "GPS / Map API интеграц",
+      "body": "Google Maps API эсвэл Mapbox",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Тест",
+      "body": "Unit, integration, UI тестүүд",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "App Store / Play Store-д байрлуулах",
+      "body": "Mobile app deployment",
+      "labels": ["Tech", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: Үнэлгээ ба сэтгэгдэл",
+      "body": "Жолооч ба зорчигч үнэлгээ, сэтгэгдэл үлдээх",
+      "labels": ["Enhancement", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: Суудал хуваах",
+      "body": "Төлбөрийг зорчигч хооронд автоматаар хуваах",
+      "labels": ["Enhancement", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: In-app chat",
+      "body": "Жолооч ↔ Зорчигч чат",
+      "labels": ["Enhancement", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: Loyalty систем",
+      "body": "Оноо цуглуулах, урамшуулал",
+      "labels": ["Enhancement", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: Dynamic pricing",
+      "body": "Цаг, түгжрэлээс хамаарсан үнэ",
+      "labels": ["Enhancement", "Mobile"]
+    },
+    {
+      "title": "Ирээдүйн сайжруулалт: Offline горим",
+      "body": "Сүлжээ тасарсан үед захиалгыг түр хадгалах",
+      "labels": ["Enhancement", "Mobile"]
+    }
+  ]

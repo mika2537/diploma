@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ubcarpool/screens/auth/login_screen.dart';
 import 'package:ubcarpool/screens/auth/register_screen.dart';
-import 'package:ubcarpool/screens/driver/driver_dashboard.dart';
-// import 'package:ubcarpool/screens/passenger/passenger_dashboard.dart';
+import 'package:ubcarpool/screens/driver/driver_main_shell.dart';
+import 'package:ubcarpool/screens/passenger/passenger_dashboard.dart';
 import 'package:ubcarpool/services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load saved user if exists
   final user = await StorageService.getUser();
   runApp(MyApp(initialUser: user));
 }
@@ -64,22 +63,29 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Give a default placeholder to satisfy null-safety
     Widget homeScreen = const SizedBox();
 
     if (currentUser == null) {
+      /// LOGIN
       homeScreen = LoginScreen(
         onLogin: handleLogin,
         onSwitchToRegister: handleSwitchToRegister,
       );
+
     } else if (role == "driver") {
-      homeScreen = DriverDashboard(
+      /// DRIVER → FOOTER NAVIGATION (Shell)
+      homeScreen = DriverMainShell(
         user: currentUser!,
-        onMakeRoute: () {},
-        onViewRequests: () {},
       );
+
     } else if (role == "passenger") {
-      homeScreen = PassengerDashboard(user: currentUser!);
+      /// PASSENGER
+      homeScreen = PassengerDashboard(
+        user: currentUser!,
+        onFindRoute: () {
+          print("Маршрут хайх товч дарлаа!");
+        },
+      );
     }
 
     return MaterialApp(
@@ -90,23 +96,6 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: homeScreen,
-    );
-  }
-}
-
-// Example placeholder PassengerDashboard widget
-class PassengerDashboard extends StatelessWidget {
-  final Map<String, dynamic> user;
-
-  const PassengerDashboard({super.key, required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Passenger Dashboard")),
-      body: Center(
-        child: Text("Welcome, ${user['name'] ?? 'Passenger'}!"),
-      ),
     );
   }
 }

@@ -1,19 +1,21 @@
+// ignore_for_file: use_super_parameters, avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:ubcarpool/screens/driver/make_route_screen.dart';
+import 'package:ubcarpool/screens/shared/profile_screen.dart';
 
 class DriverDashboard extends StatefulWidget {
   final Map<String, dynamic> user;
-  final VoidCallback onMakeRoute;
-  final VoidCallback onViewRequests;
+  final VoidCallback? onViewRequests;
 
   const DriverDashboard({
     Key? key,
     required this.user,
-    required this.onMakeRoute,
-    required this.onViewRequests,
+    this.onViewRequests, required Null Function() onMakeRoute,
   }) : super(key: key);
 
   @override
@@ -21,11 +23,10 @@ class DriverDashboard extends StatefulWidget {
 }
 
 class _DriverDashboardState extends State<DriverDashboard> {
-  // --- State ---
   int todayRides = 0;
-  int todayIncome = 0;
-  int activeRides = 0;
-  int totalIncome = 0;
+  int todayIncome = 1000;
+  int activeRides = 2;
+  int totalIncome = 100000;
 
   List<_NotificationItem> notifications = [];
   LatLng? location;
@@ -46,7 +47,8 @@ class _DriverDashboardState extends State<DriverDashboard> {
     try {
       final userId = widget.user['id'];
       final uri = Uri.parse(
-          'http://localhost:5050/api/driver/dashboard?userId=$userId');
+          'http://10.0.2.2:5050/api/driver/dashboard?userId=$userId'); // ✅ Android emulator-safe
+
       final res = await http.get(uri);
 
       if (res.statusCode == 200) {
@@ -74,10 +76,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
         });
       }
     } catch (e) {
-      setState(() {
-        loadingData = false;
-      });
-      // ignore: avoid_print
+      setState(() => loadingData = false);
       print('Failed to load dashboard: $e');
     }
   }
@@ -98,10 +97,11 @@ class _DriverDashboardState extends State<DriverDashboard> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
+
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         setState(() {
-          location = _ubDefault; // Fallback to Ulaanbaatar
+          location = _ubDefault;
           loadingMap = false;
           mapError = 'Location permission denied. Using default location.';
         });
@@ -148,7 +148,7 @@ class _DriverDashboardState extends State<DriverDashboard> {
                                   fontSize: 18, fontWeight: FontWeight.w500)),
                         ],
                       ),
-                      _NotificationButton(count: notifications.length),
+                      _ProfileButton(user: widget.user),
                     ],
                   ),
                   Text(
@@ -181,9 +181,8 @@ class _DriverDashboardState extends State<DriverDashboard> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color:
-                        Theme.of(context).dividerColor.withOpacity(0.6),
-                      ),
+                          color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.6)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Stack(
@@ -207,11 +206,8 @@ class _DriverDashboardState extends State<DriverDashboard> {
                           ),
                         if (loadingMap)
                           const Center(
-                            child: Text(
-                              'Газрын зураг ачаалж байна...',
-                              style: TextStyle(fontSize: 13),
-                            ),
-                          ),
+                              child: Text('Газрын зураг ачаалж байна...',
+                                  style: TextStyle(fontSize: 13))),
                         if (!loadingMap && mapError != null)
                           Center(
                             child: Padding(
@@ -237,41 +233,43 @@ class _DriverDashboardState extends State<DriverDashboard> {
                       _PrimaryButton(
                         label: 'Маршрут үүсгэх',
                         icon: Icons.directions_car_filled_outlined,
-                        onPressed: widget.onMakeRoute,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  MakeRouteScreen(user: widget.user),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 8),
                       _OutlinedButtonWithSub(
                         label: 'Хүсэлтүүд үзэх',
                         sublabel: '${notifications.length} шинэ хүсэлт',
                         icon: Icons.notifications_none_rounded,
-                        onPressed: widget.onViewRequests,
+                        onPressed: widget.onViewRequests ?? () {},
                       ),
                     ],
                   ),
 
-                  // Recent notifications
                   if (notifications.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Text(
-                      'Сүүлийн мэдэгдлүүд',
-                      style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
+                    const Text('Сүүлийн мэдэгдлүүд',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Column(
-                      children: notifications
-                          .take(3)
-                          .map(
-                            (n) => Container(
+                      children: notifications.take(3).map((n) {
+                        return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .dividerColor
-                                  .withOpacity(0.6),
-                            ),
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withValues(alpha: 0.6)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,10 +277,12 @@ class _DriverDashboardState extends State<DriverDashboard> {
                               Container(
                                 width: 6,
                                 height: 6,
-                                margin:
-                                const EdgeInsets.only(top: 6, right: 8),
+                                margin: const EdgeInsets.only(
+                                    top: 6, right: 8),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -307,9 +307,8 @@ class _DriverDashboardState extends State<DriverDashboard> {
                               )
                             ],
                           ),
-                        ),
-                      )
-                          .toList(),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ],
@@ -323,54 +322,117 @@ class _DriverDashboardState extends State<DriverDashboard> {
 }
 
 // --- Small UI pieces ---
-
-class _NotificationButton extends StatelessWidget {
-  final int count;
-  const _NotificationButton({required this.count});
+class _ProfileButton extends StatelessWidget {
+  final Map<String, dynamic> user;
+  const _ProfileButton({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Material(
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () {},
-            child: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.notifications_rounded, size: 24),
+    return Material(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(user: user),
             ),
-          ),
+          );
+        },
+        child: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Icon(Icons.person_rounded, size: 24),
         ),
-        if (count > 0)
-          Positioned(
-            right: -2,
-            top: -2,
-            child: Container(
-              width: 20,
-              height: 20,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                shape: BoxShape.circle,
-              ),
-              child: Text(
-                '$count',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onError,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          )
-      ],
+      ),
     );
   }
 }
+class _PrimaryButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+  const _PrimaryButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        minimumSize: const Size.fromHeight(52),
+      ),
+      onPressed: onPressed,
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
+          Icon(icon, size: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _OutlinedButtonWithSub extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final IconData icon;
+  final VoidCallback onPressed;
+  const _OutlinedButtonWithSub({
+    required this.label,
+    required this.sublabel,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final border = Theme.of(context).dividerColor.withValues(alpha: 0.6);
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(16),
+      child: Ink(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: border),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text(
+                    sublabel,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).hintColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(icon, size: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Stats Grid ---
 
 class _StatsGrid extends StatelessWidget {
   final int todayRides;
@@ -413,8 +475,14 @@ class _StatsGrid extends StatelessWidget {
             Row(children: [
               leading,
               const SizedBox(width: 8),
-              Text(label,
-                  style: TextStyle(fontSize: 12, color: foreground.withOpacity(0.9))),
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 12, color: foreground.withValues(alpha: 0.9)),
+                ),
+              ),
             ]),
             const SizedBox(height: 8),
             loading
@@ -463,180 +531,24 @@ class _StatsGrid extends StatelessWidget {
           fg: Theme.of(context).colorScheme.onSecondaryContainer,
           bold: true,
         ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.6),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Icon(Icons.trending_up_rounded,
-                    size: 20, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text('Идэвхтэй аялал',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).hintColor)),
-              ]),
-              const SizedBox(height: 8),
-              loading
-                  ? const SizedBox(
-                height: 28,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                    width: 60,
-                    height: 14,
-                    child: LinearProgressIndicator(minHeight: 6),
-                  ),
-                ),
-              )
-                  : Text(
-                '$activeRides',
-                style: const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
+        card(
+          leading: Icon(Icons.trending_up_rounded,
+              size: 20, color: Theme.of(context).colorScheme.primary),
+          label: 'Идэвхтэй аялал',
+          value: '$activeRides',
         ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.6),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                Icon(Icons.savings_outlined,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.secondary),
-                const SizedBox(width: 8),
-                Text('Нийт орлого',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).hintColor)),
-              ]),
-              const SizedBox(height: 8),
-              loading
-                  ? const SizedBox(
-                height: 28,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                    width: 60,
-                    height: 14,
-                    child: LinearProgressIndicator(minHeight: 6),
-                  ),
-                ),
-              )
-                  : Text(
-                '${k}k₮',
-                style: const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
+        card(
+          leading: Icon(Icons.savings_outlined,
+              size: 20, color: Theme.of(context).colorScheme.secondary),
+          label: 'Нийт орлого',
+          value: '${k}k₮',
         ),
       ],
     );
   }
 }
 
-class _OutlinedButtonWithSub extends StatelessWidget {
-  final String label;
-  final String sublabel;
-  final IconData icon;
-  final VoidCallback onPressed;
-  const _OutlinedButtonWithSub({
-    required this.label,
-    required this.sublabel,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final border = Theme.of(context).dividerColor.withOpacity(0.6);
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: border),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: const TextStyle(fontSize: 16)),
-                  const SizedBox(height: 4),
-                  Text(
-                    sublabel,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).hintColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(icon, size: 24),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PrimaryButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onPressed;
-  const _PrimaryButton({
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        minimumSize: const Size.fromHeight(52),
-      ),
-      onPressed: onPressed,
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
-          Icon(icon, size: 24),
-        ],
-      ),
-    );
-  }
-}
-
-// --- helpers & models ---
+// --- Helpers & Models ---
 
 class _NotificationItem {
   final String message;
@@ -645,16 +557,6 @@ class _NotificationItem {
 }
 
 String _thousand(num n) {
-  // 1200000 -> "1,200,000"
-  final s = n.round().toString();
-  final buf = StringBuffer();
-  for (int i = 0; i < s.length; i++) {
-    final idx = s.length - i;
-    buf.write(s[i]);
-    if (idx > 1 && idx % 3 == 1) buf.write(',');
-  }
-  // The above logic can be quirky with leading commas in some patterns.
-  // Simpler:
   return n.toStringAsFixed(0).replaceAllMapped(
     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
         (m) => '${m[1]},',

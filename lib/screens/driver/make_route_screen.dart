@@ -1,28 +1,29 @@
+// ignore_for_file: use_super_parameters, avoid_print
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-/// Replace with your MongoDB backend API
-const baseUrl = "http://localhost:5050/api";
+/// ✅ Replace localhost with emulator-safe IP if testing on Android
+/// (10.0.2.2 connects to your host machine)
+const baseUrl = "http://10.0.2.2:5050/api";
 
-class MakeRoute extends StatefulWidget {
+class MakeRouteScreen extends StatefulWidget {
   final Map<String, dynamic> user;
-  final VoidCallback onRouteCreated;
-  final VoidCallback onBack;
+  final VoidCallback? onRouteCreated;
 
-  const MakeRoute({
+  const MakeRouteScreen({
     Key? key,
     required this.user,
-    required this.onRouteCreated,
-    required this.onBack,
+    this.onRouteCreated,
   }) : super(key: key);
 
   @override
-  State<MakeRoute> createState() => _MakeRouteState();
+  State<MakeRouteScreen> createState() => _MakeRouteScreenState();
 }
 
-class _MakeRouteState extends State<MakeRoute> {
+class _MakeRouteScreenState extends State<MakeRouteScreen> {
   final _startController = TextEditingController();
   final _endController = TextEditingController();
   final _priceController = TextEditingController();
@@ -37,17 +38,19 @@ class _MakeRouteState extends State<MakeRoute> {
   LatLng? startPoint;
   LatLng? endPoint;
 
-  void _addMidpoint() {
-    setState(() => midpoints.add(TextEditingController()));
-  }
+  void _addMidpoint() => setState(() => midpoints.add(TextEditingController()));
 
   void _toggleVoice() {
     setState(() => voiceInput = !voiceInput);
-    if (voiceInput) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Дуу авах функц идэвхжлээ (прототип горим)")),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          voiceInput
+              ? "🎙️ Дуу авах функц идэвхжлээ (прототип горим)"
+              : "Дуу авах функц идэвхгүй боллоо",
+        ),
+      ),
+    );
   }
 
   Future<void> _handlePublish() async {
@@ -80,10 +83,11 @@ class _MakeRouteState extends State<MakeRoute> {
       );
 
       if (res.statusCode == 200) {
-        _showAlert("Маршрут амжилттай нийтлэгдлээ!");
-        widget.onRouteCreated();
+        _showAlert("✅ Маршрут амжилттай нийтлэгдлээ!");
+        widget.onRouteCreated?.call();
+        Navigator.pop(context);
       } else {
-        _showAlert("Маршрут үүсгэхэд алдаа гарлаа");
+        _showAlert("❌ Маршрут үүсгэхэд алдаа гарлаа");
       }
     } catch (e) {
       debugPrint("❌ Error creating route: $e");
@@ -94,39 +98,28 @@ class _MakeRouteState extends State<MakeRoute> {
   }
 
   void _showAlert(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Маршрут үүсгэх"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 80),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: widget.onBack,
-                        icon: const Icon(Icons.arrow_back, color: Colors.blue),
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        "Маршрут үүсгэх",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
                   // Map
                   Container(
                     height: 240,
@@ -138,27 +131,29 @@ class _MakeRouteState extends State<MakeRoute> {
                     child: GoogleMap(
                       onMapCreated: (controller) => _mapController = controller,
                       initialCameraPosition: const CameraPosition(
-                          target: LatLng(47.92, 106.92), zoom: 13),
+                        target: LatLng(47.92, 106.92),
+                        zoom: 13,
+                      ),
                       markers: {
                         if (startPoint != null)
                           Marker(
-                              markerId: const MarkerId("start"),
-                              position: startPoint!,
-                              infoWindow:
-                              InfoWindow(title: _startController.text)),
+                            markerId: const MarkerId("start"),
+                            position: startPoint!,
+                            infoWindow:
+                            InfoWindow(title: _startController.text),
+                          ),
                         if (endPoint != null)
                           Marker(
-                              markerId: const MarkerId("end"),
-                              position: endPoint!,
-                              infoWindow:
-                              InfoWindow(title: _endController.text)),
+                            markerId: const MarkerId("end"),
+                            position: endPoint!,
+                            infoWindow: InfoWindow(title: _endController.text),
+                          ),
                       },
                     ),
                   ),
-
                   const SizedBox(height: 16),
 
-                  // Voice Input Toggle
+                  // Voice Input
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton.icon(
@@ -177,14 +172,13 @@ class _MakeRouteState extends State<MakeRoute> {
 
                   const SizedBox(height: 8),
 
-                  // Start Point
+                  // Start point
                   _buildInput(
                     label: "Эхлэх цэг",
                     controller: _startController,
                     hint: "Баянзүрх дүүрэг, 3-р хороо",
                     icon: Icons.location_on_outlined,
                   ),
-
                   const SizedBox(height: 12),
 
                   // Midpoints
@@ -199,15 +193,13 @@ class _MakeRouteState extends State<MakeRoute> {
                         ),
                       TextButton(
                         onPressed: _addMidpoint,
-                        child: const Text(
-                          "+ Дундын цэг нэмэх",
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        child: const Text("+ Дундын цэг нэмэх",
+                            style: TextStyle(color: Colors.blue)),
                       ),
                     ],
                   ),
 
-                  // End Point
+                  // End point
                   _buildInput(
                     label: "Очих газар",
                     controller: _endController,
@@ -215,12 +207,11 @@ class _MakeRouteState extends State<MakeRoute> {
                     icon: Icons.flag_outlined,
                   ),
 
-                  // Departure Time
+                  // Time picker
                   _buildTimePicker(context),
-
                   const SizedBox(height: 8),
 
-                  // Seats and Price
+                  // Seats and price
                   Row(
                     children: [
                       Expanded(
@@ -244,7 +235,6 @@ class _MakeRouteState extends State<MakeRoute> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 16),
 
                   // Actions
@@ -253,7 +243,7 @@ class _MakeRouteState extends State<MakeRoute> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            _showAlert("Загвар хадгалах функц удахгүй нэмэгдэнэ");
+                            _showAlert("💾 Загвар хадгалах функц удахгүй нэмэгдэнэ");
                           },
                           icon: const Icon(Icons.bookmark_border),
                           label: const Text("Загвар хадгалах"),
@@ -283,6 +273,7 @@ class _MakeRouteState extends State<MakeRoute> {
     );
   }
 
+  // Input builder
   Widget _buildInput({
     required String label,
     required TextEditingController controller,
@@ -315,6 +306,7 @@ class _MakeRouteState extends State<MakeRoute> {
     );
   }
 
+  // Date + Time picker
   Widget _buildTimePicker(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,14 +323,21 @@ class _MakeRouteState extends State<MakeRoute> {
               lastDate: DateTime(2100),
             );
             if (date == null) return;
+
             final time = await showTimePicker(
               context: context,
               initialTime: TimeOfDay.now(),
             );
+
             if (time != null) {
               setState(() {
-                _departureTime = DateTime(date.year, date.month, date.day,
-                    time.hour, time.minute);
+                _departureTime = DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  time.hour,
+                  time.minute,
+                );
               });
             }
           },

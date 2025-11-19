@@ -1,101 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:ubcarpool/screens/auth/login_screen.dart';
-import 'package:ubcarpool/screens/auth/register_screen.dart';
-import 'package:ubcarpool/screens/driver/driver_main_shell.dart';
-import 'package:ubcarpool/screens/passenger/passenger_dashboard.dart';
-import 'package:ubcarpool/services/storage_service.dart';
+import 'package:flutter/services.dart';
+import 'package:sizer/sizer.dart';
+
+import '../core/app_export.dart';
+import '../widgets/custom_error_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final user = await StorageService.getUser();
-  runApp(MyApp(initialUser: user));
-}
+  bool _hasShownError = false;
 
-class MyApp extends StatefulWidget {
-  final Map<String, dynamic>? initialUser;
-  const MyApp({super.key, this.initialUser});
+  // 🚨 CRITICAL: Custom error handling - DO NOT REMOVE
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    if (!_hasShownError) {
+      _hasShownError = true;
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+      // Reset flag after 3 seconds to allow error widget on new screens
+      Future.delayed(Duration(seconds: 5), () {
+        _hasShownError = false;
+      });
 
-class _MyAppState extends State<MyApp> {
-  Map<String, dynamic>? currentUser;
-  String? role;
-
-  @override
-  void initState() {
-    super.initState();
-    currentUser = widget.initialUser;
-    if (currentUser != null) {
-      role = currentUser!["role"];
+      return CustomErrorWidget(
+        errorDetails: details,
+      );
     }
-  }
+    return SizedBox.shrink();
+  };
 
-  void handleLogin(Map<String, dynamic> user, String newRole) async {
-    await StorageService.saveUser(user);
-    setState(() {
-      currentUser = user;
-      role = newRole;
-    });
-  }
+  // 🚨 CRITICAL: Device orientation lock - DO NOT REMOVE
+  Future.wait([
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+  ]).then((value) {
+    runApp(MyApp());
+  });
+}
 
-  void handleLogout() async {
-    await StorageService.clear();
-    setState(() {
-      currentUser = null;
-      role = null;
-    });
-  }
-
-  void handleSwitchToRegister() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RegisterScreen(
-          onRegister: handleLogin,
-          onSwitchToLogin: () => Navigator.pop(context),
-        ),
-      ),
-    );
-  }
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    Widget homeScreen = const SizedBox();
-
-    if (currentUser == null) {
-      /// LOGIN
-      homeScreen = LoginScreen(
-        onLogin: handleLogin,
-        onSwitchToRegister: handleSwitchToRegister,
-      );
-
-    } else if (role == "driver") {
-      /// DRIVER → FOOTER NAVIGATION (Shell)
-      homeScreen = DriverMainShell(
-        user: currentUser!,
-      );
-
-    } else if (role == "passenger") {
-      /// PASSENGER
-      homeScreen = PassengerDashboard(
-        user: currentUser!,
-        onFindRoute: () {
-          print("Маршрут хайх товч дарлаа!");
+    return Sizer(builder: (context, orientation, screenType) {
+      return MaterialApp(
+        title: 'carpool_driver',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.light,
+        // 🚨 CRITICAL: NEVER REMOVE OR MODIFY
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(1.0),
+            ),
+            child: child!,
+          );
         },
+        // 🚨 END CRITICAL SECTION
+        debugShowCheckedModeBanner: false,
+        routes: AppRoutes.routes,
+        initialRoute: AppRoutes.initial,
       );
-    }
-
-    return MaterialApp(
-      title: "UB Carpool",
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
-      ),
-      home: homeScreen,
-    );
+    });
   }
 }

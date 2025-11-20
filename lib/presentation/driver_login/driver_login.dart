@@ -152,56 +152,61 @@ class _DriverLoginState extends State<DriverLogin> {
         child: Stack(
           children: [
             // Main Content
+            // Main Content
             SingleChildScrollView(
               controller: _scrollController,
-              padding: EdgeInsets.symmetric(horizontal: 6.w),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: 94.h,
+                  minHeight: MediaQuery.of(context).size.height,
                 ),
-                child: Column(
-                  children: [
-                    SizedBox(height: 8.h),
-
-                    // App Logo
-                    const AppLogoWidget(),
-
-                    SizedBox(height: 6.h),
-
-                    // Login Form
-                    LoginFormWidget(
-                      onLogin: _handleLogin,
-                      isLoading: _isLoading,
-                    ),
-
-                    const Spacer(),
-
-                    // Register Link
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          'Шинэ жолооч уу? ',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        SizedBox(height: 8.h),
+
+                        // App Logo
+                        const AppLogoWidget(),
+
+                        SizedBox(height: 6.h),
+
+                        // Login Form
+                        LoginFormWidget(
+                          onLogin: _handleLogin,
+                          isLoading: _isLoading,
                         ),
-                        TextButton(
-                          onPressed:
-                          _isLoading ? null : _handleRegisterNavigation,
-                          child: Text(
-                            'Бүртгүүлэх',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
+
+                        Spacer(),
+
+                        // Register Link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Шинэ жолооч уу? ',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
+                            TextButton(
+                              onPressed: _isLoading ? null : _handleRegisterNavigation,
+                              child: Text(
+                                'Бүртгүүлэх',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+
+                        SizedBox(height: 2.h),
                       ],
                     ),
-
-                    SizedBox(height: 2.h),
-                  ],
+                  ),
                 ),
               ),
             ),

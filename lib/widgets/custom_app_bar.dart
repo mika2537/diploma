@@ -200,10 +200,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   void _navigateToProfile(BuildContext context) {
-    // Navigate to profile - placeholder for future implementation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile feature coming soon')),
-    );
+    Navigator.pushNamed(context, '/profile');
   }
 
   void _navigateToEarningsHistory(BuildContext context) {

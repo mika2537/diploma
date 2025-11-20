@@ -78,6 +78,9 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
     );
   }
 
+  // ------------------------------
+  // NAVIGATION ITEMS
+  // ------------------------------
   List<BottomNavigationBarItem> _getNavigationItems() {
     switch (widget.variant) {
       case BottomBarVariant.driver:
@@ -103,6 +106,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
             label: 'Earnings',
           ),
         ];
+
       case BottomBarVariant.minimal:
         return [
           const BottomNavigationBarItem(
@@ -124,19 +128,20 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
     }
   }
 
+  // ------------------------------
+  // HANDLE TAP
+  // ------------------------------
   void _handleTap(int index) {
     if (index == widget.currentIndex) return;
 
-    // Provide haptic feedback for better user experience
-    HapticFeedback.lightImpact();
-
-    // Handle navigation based on index and variant
+    HapticFeedback.lightImpact(); // better UX
     _navigateToScreen(index);
-
-    // Call the provided onTap callback
     widget.onTap?.call(index);
   }
 
+  // ------------------------------
+  // NAVIGATION LOGIC
+  // ------------------------------
   void _navigateToScreen(int index) {
     final context = this.context;
 
@@ -151,17 +156,17 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
             );
             break;
           case 1:
-            Navigator.pushNamed(context, '/create-route');
+            Navigator.pushNamed(context, '/saved-route');
             break;
           case 2:
             Navigator.pushNamed(context, '/incoming-requests');
             break;
           case 3:
-          // Navigate to earnings screen - placeholder
-            _showComingSoonSnackBar('Earnings screen');
+            Navigator.pushNamed(context, '/driver-wallet');
             break;
         }
         break;
+
       case BottomBarVariant.minimal:
         switch (index) {
           case 0:
@@ -171,18 +176,23 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
                   (route) => false,
             );
             break;
+
           case 1:
             Navigator.pushNamed(context, '/incoming-requests');
             break;
+
           case 2:
-          // Navigate to profile screen - placeholder
-            _showComingSoonSnackBar('Profile screen');
+          // ⭐ FIX: Navigate to profile screen
+            Navigator.pushNamed(context, '/profile');
             break;
         }
         break;
     }
   }
 
+  // ------------------------------
+  // UI HELPERS
+  // ------------------------------
   void _showComingSoonSnackBar(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -197,7 +207,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
   }
 
   Color _getBackgroundColor(ColorScheme colorScheme, bool isDark) {
-    return isDark ? colorScheme.surface : colorScheme.surface;
+    return colorScheme.surface;
   }
 
   Color _getSelectedColor(ColorScheme colorScheme) {
@@ -205,9 +215,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
   }
 
   Color _getUnselectedColor(ColorScheme colorScheme, bool isDark) {
-    return isDark
-        ? colorScheme.onSurface.withValues(alpha: 0.6)
-        : colorScheme.onSurface.withValues(alpha: 0.6);
+    return colorScheme.onSurface.withValues(alpha: 0.6);
   }
 }
 
@@ -217,7 +225,7 @@ enum BottomBarVariant {
   minimal,
 }
 
-/// Custom BottomNavigationBar item with enhanced styling
+/// Custom BottomNavigationBar item with optional badge
 class CustomBottomBarItem extends BottomNavigationBarItem {
   final bool showBadge;
   final String? badgeText;
@@ -242,31 +250,25 @@ class CustomBottomBarItem extends BottomNavigationBarItem {
       clipBehavior: Clip.none,
       children: [
         super.icon,
-        if (showBadge)
-          Positioned(
-            right: -6,
-            top: -6,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: badgeColor ?? Colors.red,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: Text(
-                badgeText ?? '',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+        Positioned(
+          right: -6,
+          top: -6,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: badgeColor ?? Colors.red,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              badgeText ?? '',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
+        ),
       ],
     );
   }

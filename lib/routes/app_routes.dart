@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ubcarpool/presentation/driver_register/driver_register.dart';
 import '../presentation/driver_wallet/driver_wallet.dart';
 import '../presentation/create_route/create_route.dart';
 import '../presentation/request_details/request_details.dart';
@@ -10,6 +11,7 @@ import '../presentation/saved_route/saved_route.dart';
 import '../presentation/edit_route/edit_route.dart';
 import '../presentation/saved_route/models/saved_route_model.dart';
 import '../presentation/profile/profile_screen.dart';
+import '../presentation/forgot_password/forgot_password.dart';
 
 class AppRoutes {
   static const String initial = '/';
@@ -23,6 +25,8 @@ class AppRoutes {
   static const String savedRoute = '/saved-route';
   static const String editRoute = '/edit-route';
   static const String profileScreen = '/profile';
+  static const String forgotPassword = '/forgot_password';
+  static const String driverRegister = '/driver_register';
 
   static Map<String, WidgetBuilder> routes = {
     initial: (context) => const DriverDashboard(),
@@ -40,5 +44,7 @@ class AppRoutes {
     ),
 
     profileScreen: (context) => const ProfileScreen(),
+    forgotPassword: (context) => const ForgotPasswordScreen(),
+    driverRegister: (context) => const DriverRegisterScreen(),
   };
 }

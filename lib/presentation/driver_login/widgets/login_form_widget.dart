@@ -9,10 +9,15 @@ class LoginFormWidget extends StatefulWidget {
   final Function(String phone, String password) onLogin;
   final bool isLoading;
 
+  final VoidCallback onForgotPassword;
+  final VoidCallback onRegister;
+
   const LoginFormWidget({
     super.key,
     required this.onLogin,
     required this.isLoading,
+    required this.onForgotPassword,
+    required this.onRegister,
   });
 
   @override
@@ -23,6 +28,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _isPasswordVisible = false;
   bool _isFormValid = false;
 
@@ -41,32 +47,23 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   }
 
   void _validateForm() {
-    final isValid = _phoneController.text.length >= 8 &&
-        _passwordController.text.length >= 6;
+    final isValid =
+        _phoneController.text.length >= 8 && _passwordController.text.length >= 6;
+
     if (isValid != _isFormValid) {
-      setState(() {
-        _isFormValid = isValid;
-      });
+      setState(() => _isFormValid = isValid);
     }
   }
 
   String? _validatePhone(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Утасны дугаар оруулна уу';
-    }
-    if (value.length < 8) {
-      return 'Утасны дугаар хамгийн багадаа 8 оронтой байх ёстой';
-    }
+    if (value == null || value.isEmpty) return 'Утасны дугаар оруулна уу';
+    if (value.length < 8) return 'Утасны дугаар хамгийн багадаа 8 оронтой байх ёстой';
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Нууц үг оруулна уу';
-    }
-    if (value.length < 6) {
-      return 'Нууц үг хамгийн багадаа 6 тэмдэгттэй байх ёстой';
-    }
+    if (value == null || value.isEmpty) return 'Нууц үг оруулна уу';
+    if (value.length < 6) return 'Нууц үг хамгийн багадаа 6 тэмдэгттэй байх ёстой';
     return null;
   }
 
@@ -80,14 +77,13 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colors = theme.colorScheme;
 
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Phone Number Field
           TextFormField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
@@ -103,7 +99,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                   children: [
                     CustomIconWidget(
                       iconName: 'phone',
-                      color: colorScheme.primary,
+                      color: colors.primary,
                       size: 20,
                     ),
                     SizedBox(width: 2.w),
@@ -111,20 +107,20 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                       '+976',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurface,
+                        color: colors.onSurface,
                       ),
                     ),
                     Container(
                       width: 1,
                       height: 20,
                       margin: EdgeInsets.symmetric(horizontal: 2.w),
-                      color: colorScheme.outline,
+                      color: colors.outline,
                     ),
                   ],
                 ),
               ),
-              contentPadding: EdgeInsets.only(
-                  left: 20.w, right: 4.w, top: 2.h, bottom: 2.h),
+              contentPadding:
+              EdgeInsets.only(left: 20.w, right: 4.w, top: 2.h, bottom: 2.h),
             ),
             validator: _validatePhone,
             inputFormatters: [
@@ -135,7 +131,6 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
 
           SizedBox(height: 2.h),
 
-          // Password Field
           TextFormField(
             controller: _passwordController,
             obscureText: !_isPasswordVisible,
@@ -149,7 +144,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                 padding: EdgeInsets.all(3.w),
                 child: CustomIconWidget(
                   iconName: 'lock',
-                  color: colorScheme.primary,
+                  color: colors.primary,
                   size: 20,
                 ),
               ),
@@ -157,16 +152,12 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                 icon: CustomIconWidget(
                   iconName:
                   _isPasswordVisible ? 'visibility_off' : 'visibility',
-                  color: colorScheme.onSurfaceVariant,
+                  color: colors.onSurfaceVariant,
                   size: 20,
                 ),
                 onPressed: widget.isLoading
                     ? null
-                    : () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible;
-                  });
-                },
+                    : () => setState(() => _isPasswordVisible = !_isPasswordVisible),
               ),
             ),
             validator: _validatePassword,
@@ -174,25 +165,28 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
 
           SizedBox(height: 1.h),
 
-          // Forgot Password Link
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: widget.isLoading
-                  ? null
-                  : () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content:
-                    Text('Нууц үг сэргээх функц удахгүй нэмэгдэнэ'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
+              onPressed: widget.isLoading ? null : widget.onForgotPassword,
               child: Text(
                 'Нууц үгээ мартсан уу?',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.primary,
+                  color: colors.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: widget.isLoading ? null : widget.onRegister,
+              child: Text(
+                'Шинээр бүртгүүлэх',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.primary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -201,7 +195,6 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
 
           SizedBox(height: 3.h),
 
-          // Login Button
           SizedBox(
             height: 6.h,
             child: ElevatedButton(
@@ -213,15 +206,14 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                 width: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    colorScheme.onPrimary,
-                  ),
+                  valueColor:
+                  AlwaysStoppedAnimation<Color>(colors.onPrimary),
                 ),
               )
                   : Text(
                 'Нэвтрэх',
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onPrimary,
+                  color: colors.onPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
